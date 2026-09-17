@@ -11,8 +11,8 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<LangVersion>10.0</LangVersion>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<AssemblyTitle>AuthurCore.Foundation</AssemblyTitle>
-		<AssemblyName>Authur.Core</AssemblyName>
+		<AssemblyTitle>AuthurGenesis.Foundation</AssemblyTitle>
+		<AssemblyName>Authur.AuthurGenesis</AssemblyName>
 		<MinverTagPrefix>v</MinverTagPrefix>
 		<MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
 		<MinVerVerbosity>normal</MinVerVerbosity>
