@@ -15,7 +15,7 @@ namespace AuthurGenesis.Foundation
 {
 
     [SupportedOSPlatform("windows")]
-    public class ScannerBase : IDisposable
+    public class RawInputDevice : IDisposable
     {
         private readonly object _lock = new();
         private readonly ConcurrentDictionary<string, Device> _devices;
@@ -33,7 +33,7 @@ namespace AuthurGenesis.Foundation
         public string? TargetDeviceId { get; set; }
         public event Action<string>? CardScanned;
         public event Action<Device>? DeviceInserted;
-        public ScannerBase()
+        public RawInputDevice()
         {
             _stringBuffer = new(128);
             _className = $"AuthurScanner_{Guid.NewGuid():N}";
@@ -100,12 +100,12 @@ namespace AuthurGenesis.Foundation
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(ScannerBase));
+                throw new ObjectDisposedException(nameof(RawInputDevice));
             }
             lock (_lock)
             {
                 if (_messageThread is { IsAlive: true }) return;
-                _messageThread = new Thread(RunMessageLoop) { IsBackground = true, Name = $"{nameof(ScannerBase)}.MessageLoop" };
+                _messageThread = new Thread(RunMessageLoop) { IsBackground = true, Name = $"{nameof(RawInputDevice)}.MessageLoop" };
                 _messageThread.Start();
             }
         }
@@ -113,7 +113,7 @@ namespace AuthurGenesis.Foundation
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(ScannerBase));
+                throw new ObjectDisposedException(nameof(RawInputDevice));
             }
             lock (_lock)
             {
@@ -274,7 +274,7 @@ namespace AuthurGenesis.Foundation
                 Authur.DispatchMessage(msg);
             }
         }
-        ~ScannerBase()
+        ~RawInputDevice()
         {
             Dispose();
         }
