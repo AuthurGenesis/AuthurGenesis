@@ -1,0 +1,1 @@
+﻿Fist Release for device scanner .basic CSWin32

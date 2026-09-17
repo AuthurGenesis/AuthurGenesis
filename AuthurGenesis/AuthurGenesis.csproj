@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net5.0;net6.0;net8.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PublishAot>false</PublishAot>
+		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)','net8.0'))">true</IsAotCompatible>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+		<PublishTrimmed Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</PublishTrimmed>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<LangVersion>10.0</LangVersion>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<AssemblyTitle>AuthurCore.Foundation</AssemblyTitle>
+		<AssemblyName>Authur.Core</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="NativeMethods.json" />
+		<None Include="docs\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="NativeMethods.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.333">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="docs\" />
+	</ItemGroup>
+
+</Project>
