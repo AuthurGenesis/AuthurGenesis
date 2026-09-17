@@ -21,7 +21,7 @@ namespace AuthurGenesis.Foundation
         private readonly ConcurrentDictionary<string, Device> _devices;
         private readonly StringBuilder _stringBuffer;
         private readonly WNDPROC _proc;
-        private readonly CancellationTokenSource _cts = new();
+        private CancellationTokenSource _cts = new();
         private readonly string _className;
         private IntPtr _lpClassName;
         private bool _classRegistered;
@@ -105,11 +105,13 @@ namespace AuthurGenesis.Foundation
             lock (_lock)
             {
                 if (_messageThread is { IsAlive: true }) return;
+                _cts.Dispose();
+                _cts = new CancellationTokenSource();
                 _messageThread = new Thread(RunMessageLoop) { IsBackground = true, Name = $"{nameof(RawInputDevice)}.MessageLoop" };
                 _messageThread.Start();
             }
         }
-        public void stopMonitor()
+        public void StopMonitor()
         {
             if (_disposed)
             {
@@ -196,9 +198,15 @@ namespace AuthurGenesis.Foundation
         }
         private LRESULT AuthurProc(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam)
         {
-            if (_cts.IsCancellationRequested) return Authur.DefWindowProc(hwnd, msg, wParam, lParam);
             switch (msg)
             {
+                case Authur.WM_DESTROY:
+                    _cts.Cancel();
+                    Authur.PostQuitMessage(0);
+                    return new LRESULT(0);
+                case Authur.WM_INPUT when _cts.IsCancellationRequested:
+                case Authur.WM_INPUT_DEVICE_CHANGE when _cts.IsCancellationRequested:
+                    return Authur.DefWindowProc(hwnd, msg, wParam, lParam);
                 case Authur.WM_INPUT:
                     ProcessRawinputMessage(lParam);
                     return new LRESULT(0);
@@ -209,10 +217,6 @@ namespace AuthurGenesis.Foundation
                         _devices.TryAdd(device.IDCode, device);
                         DeviceInserted?.Invoke(device);
                     }
-                    return new LRESULT(0);
-                case Authur.WM_DESTROY:
-                    _cts.Cancel();
-                    Authur.PostQuitMessage(0);
                     return new LRESULT(0);
             }
             return Authur.DefWindowProc(hwnd, msg, wParam, lParam);
@@ -247,7 +251,7 @@ namespace AuthurGenesis.Foundation
             uint size = 0, headerSize = (uint)sizeof(RAWINPUTHEADER);
             var hRaw = new HRAWINPUT(lParam);
             var requiredSize = Authur.GetRawInputData(hRaw, RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT, null, &size, headerSize);
-            if (requiredSize == unchecked((uint)-1) || size < sizeof(RAWINPUT))
+            if (requiredSize == unchecked((uint)-1))
                 return default;
 
             var buffer = ArrayPool<byte>.Shared.Rent((int)size);
@@ -256,9 +260,7 @@ namespace AuthurGenesis.Foundation
                 fixed (byte* pbuffer = buffer)
                 {
                     var res = Authur.GetRawInputData(hRaw, RAW_INPUT_DATA_COMMAND_FLAGS.RID_INPUT, pbuffer, &size, headerSize);
-                    return res == unchecked((uint)-1) || size < sizeof(RAWINPUT)
-                        ? default
-                        : *(RAWINPUT*)pbuffer;
+                    return res == unchecked((uint)-1) ? default : *(RAWINPUT*)pbuffer;
                 }
             }
             finally
@@ -268,7 +270,7 @@ namespace AuthurGenesis.Foundation
         }
         private void PumpMessages()
         {
-            while (Authur.GetMessage(out MSG msg, _hwnd, 0, 0) != 0)
+            while (Authur.GetMessage(out MSG msg, HWND.Null, 0, 0) != 0)
             {
                 Authur.TranslateMessage(msg);
                 Authur.DispatchMessage(msg);
