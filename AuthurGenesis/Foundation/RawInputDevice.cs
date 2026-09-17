@@ -1,11 +1,8 @@
-﻿using AuthurGenesis.Foundation.Fountainhead;
-using System;
+﻿#pragma warning disable CA1416
+using AuthurGenesis.Foundation.Fountainhead;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -29,16 +26,13 @@ namespace AuthurGenesis.Foundation
         private IntPtr _lpClassName;
         private bool _classRegistered;
         private bool _rawInputRegistered;
-
         private HWND _hwnd;
         private HMODULE _instance;
         private Thread? _messageThread;
         private volatile bool _disposed;
-
         public string? TargetDeviceId { get; set; }
         public event Action<string>? CardScanned;
         public event Action<Device>? DeviceInserted;
-
         public ScannerBase()
         {
             _stringBuffer = new(128);
@@ -179,8 +173,6 @@ namespace AuthurGenesis.Foundation
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
                 RegisterRawInput();
-
-
             }
         }
         private unsafe void RegisterRawInput()
@@ -216,7 +208,6 @@ namespace AuthurGenesis.Foundation
                     {
                         _devices.TryAdd(device.IDCode, device);
                         DeviceInserted?.Invoke(device);
-
                     }
                     return new LRESULT(0);
                 case Authur.WM_DESTROY:
@@ -283,7 +274,6 @@ namespace AuthurGenesis.Foundation
                 Authur.DispatchMessage(msg);
             }
         }
-
         ~ScannerBase()
         {
             Dispose();
@@ -317,7 +307,6 @@ namespace AuthurGenesis.Foundation
             }
             GC.SuppressFinalize(this);
         }
-
         private unsafe void ReleaseNativeResources()
         {
             if (_hwnd != HWND.Null && _rawInputRegistered)

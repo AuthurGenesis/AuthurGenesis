@@ -13,6 +13,10 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<AssemblyTitle>AuthurCore.Foundation</AssemblyTitle>
 		<AssemblyName>Authur.Core</AssemblyName>
+		<MinverTagPrefix>v</MinverTagPrefix>
+		<MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+		<MinVerVerbosity>normal</MinVerVerbosity>
+		<IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -28,6 +32,10 @@
 		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.333">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="MinVer" Version="8.0.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 

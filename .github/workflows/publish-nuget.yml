@@ -1,0 +1,42 @@
+# ========== 1. 触发条件：什么时候自动运行这个流水线 ==========
+name: Publish NuGet Package
+
+on:
+  # 场景A：推送 v* 格式的 tag 时 → 发布正式版
+  push:
+    tags: ['v*']
+  
+  # 场景B：main 分支有代码合并时 → 仅构建验证，不发布
+  pull_request:
+    branches: [main]
+
+# ========== 2. 任务定义：流水线要做什么 ==========
+jobs:
+  pack-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 步骤1：拉取代码（⚠️ fetch-depth: 0 是关键！）
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # MinVer 需要读取所有 Git Tag 历史，默认只拉最近1次提交会导致版本计算错误
+      
+      # 步骤2：安装 .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      # 步骤3：打包（MinVer 在这一步自动计算版本号并注入包中）
+      - name: Pack NuGet Package
+        run: dotnet pack -c Release -o ./artifacts
+      
+      # 步骤4：仅在推送 tag 时推送到 NuGet.org
+      - name: Push to NuGet.org
+        if: startsWith(github.ref, 'refs/tags/v')  # 🔒 安全锁：防止 PR 或普通提交误发版
+        run: |
+          dotnet nuget push ./artifacts/*.nupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
